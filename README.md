@@ -1,41 +1,47 @@
-# rivendell_lens_shader
+# glass_lens_shader
 
-A one-file Flutter package that ships the **navigation-bar lens** fragment
-shader (`rivendell_lens.frag`) for the Rivendell app.
+A one-file Flutter package that ships a **magnifying glass-lens** fragment
+shader (`lens.frag`).
 
-It exists so the shader can be delivered to the FlutterFlow-managed app as a
-**dependency**, rather than as a project asset — FlutterFlow does not emit a
-`shaders:` block in its generated `pubspec.yaml` for a shader loaded from
-custom code, so a normal asset upload never gets compiled/bundled by the
-FlutterFlow CI build. A dependency package, by contrast, has its shaders
-compiled and bundled automatically.
+The shader draws a rounded-capsule "lens" that:
 
-## Use in FlutterFlow
+- **barrel-magnifies** the content sampled behind it (a `sampler2D` you supply),
+- adds a **chromatic-aberration rim** (RGB channel split toward the edge),
+- and paints a **translucent glass body** with a soft specular highlight.
 
-1. Push this folder to a git repository (e.g. GitHub).
-2. In FlutterFlow → **Custom Code → Pubspec Dependencies**, add:
+It's packaged as a dependency rather than a project asset so it can be
+delivered to **builder/CI environments that don't let you edit `pubspec.yaml`
+directly** (e.g. FlutterFlow): a dependency package has its shaders compiled
+and bundled automatically, accessible under `packages/glass_lens_shader/`,
+with **no `shaders:` entry needed in the consuming app**.
 
-   ```yaml
-   rivendell_lens_shader:
-     git:
-       url: https://github.com/<you>/rivendell_lens_shader.git
-       ref: main          # or a tag/commit for a pinned version
-   ```
+## Install
 
-3. Load the shader in custom code with the `packages/` prefix:
+As a git dependency (in your app's `pubspec.yaml`, or a builder's custom
+dependency field):
 
-   ```dart
-   ui.FragmentProgram.fromAsset(
-     'packages/rivendell_lens_shader/shaders/rivendell_lens.frag',
-   );
-   ```
+```yaml
+glass_lens_shader:
+  git:
+    url: https://github.com/<you>/glass_lens_shader.git
+    ref: main          # or a tag/commit for a pinned version
+```
 
-No `shaders:` entry is needed in the app's own `pubspec.yaml`.
+## Use
+
+```dart
+import 'dart:ui' as ui;
+import 'package:glass_lens_shader/glass_lens_shader.dart';
+
+final program = await ui.FragmentProgram.fromAsset(kGlassLensShaderAsset);
+final shader = program.fragmentShader();
+// set the uniforms below, bind your texture, draw with a Paint()..shader = shader
+```
 
 ## Uniforms
 
 All scalar floats (set in this order via `setFloat`), plus one `sampler2D`
-(`uTexture`, the icon-row snapshot):
+(`uTexture` — the content to magnify):
 
 | idx | name | meaning |
 |-----|------|---------|
@@ -49,3 +55,11 @@ All scalar floats (set in this order via `setFloat`), plus one `sampler2D`
 | 7 | uMagnify | centre magnification (~1.12–1.22) |
 | 8 | uAberration | rim RGB split (fraction of width) |
 | 9 | uBloom | overall lens presence 0–1 |
+
+The shader expects the sampled texture to be **premultiplied** (as
+`toImageSync()` produces) and un-premultiplies internally, so glyph/edge alpha
+composites correctly.
+
+## License
+
+MIT

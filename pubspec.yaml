@@ -1,12 +1,13 @@
-name: rivendell_lens_shader
+name: glass_lens_shader
 description: >-
-  Slack-style navigation-bar lens fragment shader for the Rivendell app.
-  Bundles a single GLSL .frag so it can be pulled into the FlutterFlow project
-  as a dependency — the shader is compiled and bundled automatically and loaded
-  at runtime via FragmentProgram.fromAsset('packages/rivendell_lens_shader/shaders/rivendell_lens.frag').
+  A magnifying "glass lens" fragment shader — a rounded-capsule lens that
+  barrel-magnifies the content sampled behind it, with a chromatic-aberration
+  rim and a translucent glass body. Shipped as a Flutter package so it can be
+  added as a dependency; the shader is compiled and bundled automatically and
+  loaded at runtime via
+  FragmentProgram.fromAsset('packages/glass_lens_shader/shaders/lens.frag').
 version: 0.1.0
-# Distributed as a git dependency, not via pub.dev. Remove this line if you
-# ever choose to publish it to pub.dev instead.
+# Distributed as a git dependency. Remove this line to publish to pub.dev.
 publish_to: none
 
 environment:
@@ -20,6 +21,6 @@ dependencies:
 flutter:
   # Declaring the shader here is what makes Flutter compile it and bundle it
   # into any app that depends on this package, accessible under
-  # packages/rivendell_lens_shader/. The consuming app needs NO shaders: entry.
+  # packages/glass_lens_shader/. The consuming app needs NO shaders: entry.
   shaders:
-    - shaders/rivendell_lens.frag
+    - shaders/lens.frag
